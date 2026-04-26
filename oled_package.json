@@ -1,0 +1,37 @@
+{
+  "id": "sanwitch-oled-ssd1306",
+  "name": "OLED Display Support",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "oled_init",
+      "label": "OLED Setup",
+      "category": "output",
+      "hint": "Initialize the I2C OLED display (128x64)",
+      "fields": [
+        { "name": "scl", "label": "SCL Pin", "type": "number", "default": "22" },
+        { "name": "sda", "label": "SDA Pin", "type": "number", "default": "21" }
+      ],
+      "codeTemplate": "oled = init_oled(scl={{scl}}, sda={{sda}})",
+      "helpers": [
+        "def init_oled(scl, sda):\n    from machine import Pin, I2C\n    import ssd1306\n    i2c = I2C(0, scl=Pin(scl), sda=Pin(sda))\n    display = ssd1306.SSD1306_I2C(128, 64, i2c)\n    return display"
+      ],
+      "imports": ["import ssd1306"]
+    },
+    {
+      "type": "oled_print",
+      "label": "OLED Print",
+      "category": "output",
+      "hint": "Display text at coordinates",
+      "fields": [
+        { "name": "text", "label": "Text", "type": "text", "default": "Hello!" },
+        { "name": "x", "label": "X", "type": "number", "default": "0" },
+        { "name": "y", "label": "Y", "type": "number", "default": "0" }
+      ],
+      "codeTemplate": "oled.text('{{text}}', {{x}}, {{y}})\noled.show()"
+    }
+  ],
+  "libraries": {
+    "ssd1306.py": "# SSD1306 MicroPython Driver\n# Standard open-source SSD1306 driver code\nimport time\nfrom micropython import const\n\nSET_CONTRAST = const(0x81)\nSET_ENTIRE_ON = const(0xA4)\nSET_NORM_INV = const(0xA6)\nSET_DISP = const(0xAE)\nSET_MEM_ADDR = const(0x20)\nSET_COL_ADDR = const(0x21)\nSET_PAGE_ADDR = const(0x22)\nSET_DISP_START_LINE = const(0x40)\nSET_SEG_REMAP = const(0xA0)\nSET_MUX_RATIO = const(0xA8)\nSET_COM_OUT_DIR = const(0xC0)\nSET_DISP_OFFSET = const(0xD3)\nSET_COM_PIN_CFG = const(0xDA)\nSET_DISP_CLK_DIV = const(0xD5)\nSET_PRECHARGE = const(0xD9)\nSET_VCOM_DESEL = const(0xDB)\nSET_CHARGE_PUMP = const(0x8D)\n\nclass SSD1306:\n    def __init__(self, width, height, external_vcc):\n        self.width = width\n        self.height = height\n        self.external_vcc = external_vcc\n        self.pages = self.height // 8\n        self.buffer = bytearray(self.pages * self.width)\n        import framebuf\n        self.framebuf = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MONO_VLSB)\n        self.init_display()\n\n    def init_display(self):\n        for cmd in (\n            SET_DISP | 0x00, SET_MEM_ADDR, 0x00, SET_DISP_START_LINE | 0x00, SET_SEG_REMAP | 0x01, SET_MUX_RATIO, self.height - 1,\n            SET_COM_OUT_DIR | 0x08, SET_DISP_OFFSET, 0x00, SET_COM_PIN_CFG, 0x02 if self.width > 2 * self.height else 0x12,\n            SET_DISP_CLK_DIV, 0x80, SET_PRECHARGE, 0x22 if self.external_vcc else 0xF1, SET_VCOM_DESEL, 0x30, SET_CONTRAST, 0xFF,\n            SET_ENTIRE_ON, SET_NORM_INV, SET_CHARGE_PUMP, 0x10 if self.external_vcc else 0x14, SET_DISP | 0x01):\n            self.write_cmd(cmd)\n        self.fill(0)\n        self.show()\n\n    def fill(self, col): self.framebuf.fill(col)\n    def pixel(self, x, y, col): self.framebuf.pixel(x, y, col)\n    def scroll(self, dx, dy): self.framebuf.scroll(dx, dy)\n    def text(self, string, x, y, col=1): self.framebuf.text(string, x, y, col)\n\nclass SSD1306_I2C(SSD1306):\n    def __init__(self, width, height, i2c, addr=0x3C, external_vcc=False):\n        self.i2c = i2c\n        self.addr = addr\n        self.temp = bytearray(2)\n        self.write_list = [b'\\x40', None]\n        super().__init__(width, height, external_vcc)\n\n    def write_cmd(self, cmd):\n        self.temp[0] = 0x80\n        self.temp[1] = cmd\n        self.i2c.writeto(self.addr, self.temp)\n\n    def show(self):\n        x0 = 0\n        x1 = self.width - 1\n        if self.width == 64: x0 += 32; x1 += 32\n        self.write_cmd(SET_COL_ADDR); self.write_cmd(x0); self.write_cmd(x1)\n        self.write_cmd(SET_PAGE_ADDR); self.write_cmd(0); self.write_cmd(self.pages - 1)\n        self.write_list[1] = self.buffer\n        self.i2c.writevto(self.addr, self.write_list)\n"
+  }
+}

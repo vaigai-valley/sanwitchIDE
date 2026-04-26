@@ -1,0 +1,32 @@
+{
+  "id": "sanwitch-neopixel-pro",
+  "name": "NeoPixel RGB Support",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "neo_setup",
+      "label": "NeoPixel Setup",
+      "category": "output",
+      "hint": "Initialize a WS2812B RGB LED strip",
+      "fields": [
+        { "name": "pin", "label": "Data Pin", "type": "number", "default": "4" },
+        { "name": "num", "label": "LED Count", "type": "number", "default": "8" }
+      ],
+      "codeTemplate": "np = neopixel.NeoPixel(machine.Pin({{pin}}), {{num}})",
+      "imports": ["import neopixel", "import machine"]
+    },
+    {
+      "type": "neo_set",
+      "label": "Set Color",
+      "category": "output",
+      "hint": "Set color for a specific LED",
+      "fields": [
+        { "name": "index", "label": "LED #", "type": "number", "default": "0" },
+        { "name": "r", "label": "Red", "type": "number", "default": "255" },
+        { "name": "g", "label": "Green", "type": "number", "default": "0" },
+        { "name": "b", "label": "Blue", "type": "number", "default": "0" }
+      ],
+      "codeTemplate": "np[{{index}}] = ({{r}}, {{g}}, {{b}})\nnp.write()"
+    }
+  ]
+}
