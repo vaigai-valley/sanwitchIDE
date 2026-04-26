@@ -1,32 +1,30 @@
 {
-  "id": "sanwitch-neopixel-pro",
-  "name": "NeoPixel RGB Support",
-  "version": "1.0.0",
+  "id": "sanwitch-neopixel-fancy",
+  "name": "NeoPixel Fancy Support",
+  "version": "1.1.0",
   "blocks": [
     {
-      "type": "neo_setup",
+      "type": "neo_init",
       "label": "NeoPixel Setup",
       "category": "output",
-      "hint": "Initialize a WS2812B RGB LED strip",
       "fields": [
-        { "name": "pin", "label": "Data Pin", "type": "number", "default": "4" },
-        { "name": "num", "label": "LED Count", "type": "number", "default": "8" }
+        { "name": "pin", "label": "Pin", "type": "number", "default": "4" },
+        { "name": "num", "label": "LEDs", "type": "number", "default": "8" }
       ],
-      "codeTemplate": "np = neopixel.NeoPixel(machine.Pin({{pin}}), {{num}})",
-      "imports": ["import neopixel", "import machine"]
+      "codeTemplate": "leds = neopixel_pro.NeoPro({{pin}}, {{num}})",
+      "imports": ["import neopixel_pro"]
     },
     {
-      "type": "neo_set",
-      "label": "Set Color",
+      "type": "neo_rainbow",
+      "label": "Rainbow Effect",
       "category": "output",
-      "hint": "Set color for a specific LED",
       "fields": [
-        { "name": "index", "label": "LED #", "type": "number", "default": "0" },
-        { "name": "r", "label": "Red", "type": "number", "default": "255" },
-        { "name": "g", "label": "Green", "type": "number", "default": "0" },
-        { "name": "b", "label": "Blue", "type": "number", "default": "0" }
+        { "name": "speed", "label": "Speed", "type": "number", "default": "0.1" }
       ],
-      "codeTemplate": "np[{{index}}] = ({{r}}, {{g}}, {{b}})\nnp.write()"
+      "codeTemplate": "leds.rainbow_cycle({{speed}})"
     }
-  ]
+  ],
+  "libraries": {
+    "neopixel_pro.py": "import neopixel\nimport machine\nimport time\n\nclass NeoPro:\n    def __init__(self, pin, num):\n        self.np = neopixel.NeoPixel(machine.Pin(pin), num)\n        self.num = num\n\n    def set_color(self, i, r, g, b):\n        self.np[i] = (r, g, b)\n        self.np.write()\n\n    def rainbow_cycle(self, wait):\n        for j in range(255):\n            for i in range(self.num):\n                rc_index = (i * 256 // self.num) + j\n                self.np[i] = self.wheel(rc_index & 255)\n            self.np.write()\n            time.sleep(wait)\n\n    def wheel(self, pos):\n        if pos < 85:\n            return (pos * 3, 255 - pos * 3, 0)\n        elif pos < 170:\n            pos -= 85\n            return (255 - pos * 3, 0, pos * 3)\n        else:\n            pos -= 170\n            return (0, pos * 3, 255 - pos * 3)\n"
+  }
 }
