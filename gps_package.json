@@ -1,0 +1,25 @@
+{
+  "id": "sanwitch-gps-official",
+  "name": "GPS Hardware Package",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "gps",
+      "label": "GPS Read",
+      "category": "sensor",
+      "hint": "Fetch latitude and longitude from UART GPS module",
+      "fields": [
+        { "name": "tx", "label": "TX Pin", "type": "number", "default": "16" },
+        { "name": "rx", "label": "RX Pin", "type": "number", "default": "17" }
+      ],
+      "codeTemplate": "_lat, _lon = get_gps_fix(tx={{tx}}, rx={{rx}})\nprint(\"GPS -> Lat:\", _lat, \"Lon:\", _lon)",
+      "helpers": [
+        "_gps_inst = None\ndef get_gps_fix(tx, rx):\n    global _gps_inst\n    try:\n        import gps\n        return gps.get_location(tx=tx, rx=rx)\n    except Exception as e:\n        print('GPS Error: ensure library is installed')\n        return (0, 0)"
+      ],
+      "imports": ["from machine import Pin, UART"]
+    }
+  ],
+  "libraries": {
+    "gps.py": "# Sanwitch GPS Library for ESP32\nimport machine\nimport time\n\nclass GPS:\n    def __init__(self, tx, rx):\n        self.uart = machine.UART(1, baudrate=9600, tx=int(tx), rx=int(rx))\n        self.latitude = 0.0\n        self.longitude = 0.0\n\n    def update(self):\n        if self.uart.any():\n            try:\n                line = self.uart.readline().decode('utf-8', 'ignore')\n                if line.startswith('$GPRMC') or line.startswith('$GPGGA'):\n                    parts = line.split(',')\n                    if line.startswith('$GPRMC') and len(parts) > 6 and parts[2] == 'A':\n                        self.latitude = self._to_decimal(parts[3], parts[4])\n                        self.longitude = self._to_decimal(parts[5], parts[6])\n                        return True\n                    if line.startswith('$GPGGA') and len(parts) > 6 and int(parts[6]) > 0:\n                        self.latitude = self._to_decimal(parts[2], parts[3])\n                        self.longitude = self._to_decimal(parts[4], parts[5])\n                        return True\n            except: pass\n        return False\n\n    def _to_decimal(self, value, direction):\n        try:\n            if not value or '.' not in value: return 0.0\n            dot_idx = value.find('.')\n            dd = float(value[:dot_idx-2])\n            mm = float(value[dot_idx-2:])\n            decimal = dd + (mm / 60)\n            if direction in ['S', 'W']: decimal = -decimal\n            return decimal\n        except: return 0.0\n\n    def get_location(self):\n        start = time.ticks_ms()\n        while time.ticks_diff(time.ticks_ms(), start) < 500:\n            if self.update(): break\n        return (self.latitude, self.longitude)\n\n_inst = None\ndef get_location(tx, rx):\n    global _inst\n    if _inst is None: _inst = GPS(tx, rx)\n    return _inst.get_location()\n"
+  }
+}
