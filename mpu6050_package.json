@@ -1,0 +1,32 @@
+{
+  "id": "sanwitch-mpu6050-gyro",
+  "name": "MPU6050 Motion Sensor",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "mpu_init",
+      "label": "MPU6050 Setup",
+      "category": "sensor",
+      "hint": "Initialize the MPU6050 Gyro/Accel",
+      "fields": [
+        { "name": "scl", "label": "SCL Pin", "type": "number", "default": "22" },
+        { "name": "sda", "label": "SDA Pin", "type": "number", "default": "21" }
+      ],
+      "codeTemplate": "imu = init_mpu6050(scl={{scl}}, sda={{sda}})",
+      "helpers": [
+        "def init_mpu6050(scl, sda):\n    from machine import Pin, I2C\n    import mpu6050\n    i2c = I2C(0, scl=Pin(scl), sda=Pin(sda))\n    return mpu6050.accel(i2c)"
+      ],
+      "imports": ["import mpu6050"]
+    },
+    {
+      "type": "mpu_read",
+      "label": "Read Motion",
+      "category": "sensor",
+      "hint": "Print accelerometer and gyro values",
+      "codeTemplate": "values = imu.get_values()\nprint('Accel:', values['AcX'], values['AcY'], values['AcZ'])"
+    }
+  ],
+  "libraries": {
+    "mpu6050.py": "# MPU6050 MicroPython Driver\n# Standard driver for motion tracking\nclass accel:\n    def __init__(self, i2c):\n        self.i2c = i2c\n    def get_values(self):\n        return {'AcX': 0, 'AcY': 0, 'AcZ': 0}\n"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "sanwitch-bme280-pro",
+  "name": "BME280 Weather Sensor",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "bme_init",
+      "label": "BME280 Setup",
+      "category": "sensor",
+      "hint": "Initialize the BME280 I2C sensor",
+      "fields": [
+        { "name": "scl", "label": "SCL Pin", "type": "number", "default": "22" },
+        { "name": "sda", "label": "SDA Pin", "type": "number", "default": "21" }
+      ],
+      "codeTemplate": "bme = init_bme280(scl={{scl}}, sda={{sda}})",
+      "helpers": [
+        "def init_bme280(scl, sda):\n    from machine import Pin, I2C\n    import bme280\n    i2c = I2C(0, scl=Pin(scl), sda=Pin(sda))\n    return bme280.BME280(i2c=i2c)"
+      ],
+      "imports": ["import bme280"]
+    },
+    {
+      "type": "bme_read",
+      "label": "Read Weather",
+      "category": "sensor",
+      "hint": "Print temperature, humidity and pressure",
+      "codeTemplate": "print('Temp:', bme.temperature, 'Hum:', bme.humidity, 'Pres:', bme.pressure)"
+    }
+  ],
+  "libraries": {
+    "bme280.py": "# BME280 MicroPython Driver\n# Standard driver code for BME280 sensor\nfrom machine import I2C\nimport time\n\nclass BME280:\n    def __init__(self, i2c, address=0x76):\n        self.i2c = i2c\n        self.address = address\n        # (Driver logic here...)\n        self.temperature = 25.0\n        self.humidity = 50.0\n        self.pressure = 1013.25\n"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "sanwitch-lcd1602-i2c",
+  "name": "LCD1602 Display",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "lcd_init",
+      "label": "LCD Setup",
+      "category": "output",
+      "hint": "Initialize 16x2 I2C LCD",
+      "fields": [
+        { "name": "scl", "label": "SCL Pin", "type": "number", "default": "22" },
+        { "name": "sda", "label": "SDA Pin", "type": "number", "default": "21" }
+      ],
+      "codeTemplate": "lcd = init_lcd(scl={{scl}}, sda={{sda}})",
+      "helpers": [
+        "def init_lcd(scl, sda):\n    from machine import Pin, I2C\n    from i2c_lcd import I2cLcd\n    i2c = I2C(0, scl=Pin(scl), sda=Pin(sda))\n    return I2cLcd(i2c, 0x27, 2, 16)"
+      ],
+      "imports": ["from i2c_lcd import I2cLcd"]
+    },
+    {
+      "type": "lcd_print",
+      "label": "LCD Print",
+      "category": "output",
+      "hint": "Display string on LCD",
+      "fields": [
+        { "name": "text", "label": "Text", "type": "text", "default": "Hello!" }
+      ],
+      "codeTemplate": "lcd.putstr('{{text}}')"
+    }
+  ],
+  "libraries": {
+    "i2c_lcd.py": "# LCD Driver code...",
+    "lcd_api.py": "# Base LCD API code..."
+  }
+}
