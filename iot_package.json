@@ -1,5 +1,6 @@
 {
-  "name": "sanwitch-iot-core",
+  "id": "sanwitch-iot-core",
+  "name": "IoT & Network Core",
   "version": "1.0.0",
   "blocks": [
     {
