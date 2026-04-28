@@ -9,8 +9,18 @@
       "category": "utility",
       "hint": "Connect ESP32 to a WiFi network",
       "fields": [
-        { "name": "ssid", "label": "SSID", "type": "text", "default": "MyWiFi" },
-        { "name": "password", "label": "Password", "type": "text", "default": "password123" }
+        {
+          "name": "ssid",
+          "label": "SSID",
+          "type": "text",
+          "default": "MyWiFi"
+        },
+        {
+          "name": "password",
+          "label": "Password",
+          "type": "text",
+          "default": "password123"
+        }
       ],
       "codeTemplate": "import network\n_wlan = network.WLAN(network.STA_IF)\n_wlan.active(True)\nif not _wlan.isconnected():\n    _wlan.connect(\"{{ssid}}\", \"{{password}}\")\n    while not _wlan.isconnected():\n        pass\nprint(\"WiFi connected:\", _wlan.ifconfig())\n"
     },
@@ -20,8 +30,18 @@
       "category": "utility",
       "hint": "Fetch data from a URL",
       "fields": [
-        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" },
-        { "name": "url", "label": "URL", "type": "text", "default": "http://httpbin.org/get" }
+        {
+          "name": "assignVar",
+          "label": "Assign to Var (Optional)",
+          "type": "text",
+          "default": ""
+        },
+        {
+          "name": "url",
+          "label": "URL",
+          "type": "text",
+          "default": "http://httpbin.org/get"
+        }
       ],
       "codeTemplate": "import urequests\nres = urequests.get(\"{{url}}\")\nprint(\"Status:\", res.status_code)\nprint(res.text)\nres.close()\n",
       "valueTemplate": "urequests.get(\"{{url}}\").text"
@@ -32,12 +52,116 @@
       "category": "utility",
       "hint": "Send JSON data to a URL",
       "fields": [
-        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" },
-        { "name": "url", "label": "URL", "type": "text", "default": "http://httpbin.org/post" },
-        { "name": "payload", "label": "JSON Payload", "type": "text", "default": "{\"key\": \"value\"}" }
+        {
+          "name": "assignVar",
+          "label": "Assign to Var (Optional)",
+          "type": "text",
+          "default": ""
+        },
+        {
+          "name": "url",
+          "label": "URL",
+          "type": "text",
+          "default": "http://httpbin.org/post"
+        },
+        {
+          "name": "payload",
+          "label": "JSON Payload",
+          "type": "text",
+          "default": "{\"key\": \"value\"}"
+        }
       ],
       "codeTemplate": "import urequests\nres = urequests.post(\"{{url}}\", json={{payload}})\nprint(\"Status:\", res.status_code)\nprint(res.text)\nres.close()\n",
       "valueTemplate": "urequests.post(\"{{url}}\", json={{payload}}).text"
+    },
+    {
+      "type": "ntp_sync",
+      "label": "NTP Time Sync",
+      "category": "utility",
+      "hint": "Sync ESP32 internal clock with internet time",
+      "fields": [],
+      "codeTemplate": "import ntptime\ntry:\n    ntptime.settime()\n    print(\"Time synced via NTP\")\nexcept Exception as e:\n    print(\"NTP Sync failed:\", e)\n"
+    },
+    {
+      "type": "mqtt_setup",
+      "label": "MQTT Setup",
+      "category": "utility",
+      "hint": "Connect to an MQTT Broker",
+      "fields": [
+        {
+          "name": "client_id",
+          "label": "Client ID",
+          "type": "text",
+          "default": "esp32_client"
+        },
+        {
+          "name": "broker",
+          "label": "Broker URL",
+          "type": "text",
+          "default": "mqtt.eclipseprojects.io"
+        },
+        {
+          "name": "user",
+          "label": "Username (Opt)",
+          "type": "text",
+          "default": ""
+        },
+        {
+          "name": "pwd",
+          "label": "Password (Opt)",
+          "type": "text",
+          "default": ""
+        }
+      ],
+      "codeTemplate": "from umqtt.simple import MQTTClient\nmqtt_client = MQTTClient(\"{{client_id}}\", \"{{broker}}\", user=\"{{user}}\" if \"{{user}}\" else None, password=\"{{pwd}}\" if \"{{pwd}}\" else None)\ntry:\n    mqtt_client.connect()\n    print(\"Connected to MQTT Broker!\")\nexcept Exception as e:\n    print(\"MQTT Connect failed:\", e)\n"
+    },
+    {
+      "type": "mqtt_publish",
+      "label": "MQTT Publish",
+      "category": "utility",
+      "hint": "Publish a message to an MQTT Topic",
+      "fields": [
+        {
+          "name": "topic",
+          "label": "Topic",
+          "type": "text",
+          "default": "test/topic"
+        },
+        {
+          "name": "msg",
+          "label": "Message",
+          "type": "text",
+          "default": "hello"
+        }
+      ],
+      "codeTemplate": "try:\n    mqtt_client.publish(\"{{topic}}\", str({{msg}}))\n    print(\"Published to {{topic}}\")\nexcept Exception as e:\n    print(\"MQTT Publish failed:\", e)\n"
+    },
+    {
+      "type": "thingspeak_pub",
+      "label": "ThingSpeak Write",
+      "category": "utility",
+      "hint": "Publish a value to a ThingSpeak Field",
+      "fields": [
+        {
+          "name": "api_key",
+          "label": "Write API Key",
+          "type": "text",
+          "default": "YOUR_KEY"
+        },
+        {
+          "name": "field",
+          "label": "Field Number",
+          "type": "number",
+          "default": "1"
+        },
+        {
+          "name": "value",
+          "label": "Value",
+          "type": "text",
+          "default": "25.5"
+        }
+      ],
+      "codeTemplate": "import urequests\nts_url = \"http://api.thingspeak.com/update?api_key={{api_key}}&field{{field}}=\" + str({{value}})\ntry:\n    res = urequests.get(ts_url)\n    print(\"ThingSpeak Status:\", res.status_code)\n    res.close()\nexcept Exception as e:\n    print(\"ThingSpeak Update failed:\", e)\n"
     }
   ]
 }
