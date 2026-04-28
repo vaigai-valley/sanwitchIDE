@@ -23,6 +23,10 @@
       "label": "Read Motion",
       "category": "sensor",
       "hint": "Print accelerometer and gyro values",
+      "fields": [
+        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" }
+      ],
+      "valueTemplate": "imu.get_values()",
       "codeTemplate": "values = imu.get_values()\nprint('Accel:', values['AcX'], values['AcY'], values['AcZ'])"
     }
   ],
