@@ -1,0 +1,31 @@
+{
+  "name": "urequests",
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "type": "http_get",
+      "label": "HTTP GET",
+      "category": "utility",
+      "hint": "Fetch data from a URL",
+      "fields": [
+        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" },
+        { "name": "url", "label": "URL", "type": "text", "default": "http://httpbin.org/get" }
+      ],
+      "codeTemplate": "import urequests\nres = urequests.get(\"{{url}}\")\nprint(\"Status:\", res.status_code)\nprint(res.text)\nres.close()\n",
+      "valueTemplate": "urequests.get(\"{{url}}\").text"
+    },
+    {
+      "type": "http_post",
+      "label": "HTTP POST",
+      "category": "utility",
+      "hint": "Send JSON data to a URL",
+      "fields": [
+        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" },
+        { "name": "url", "label": "URL", "type": "text", "default": "http://httpbin.org/post" },
+        { "name": "payload", "label": "JSON Payload", "type": "text", "default": "{\"key\": \"value\"}" }
+      ],
+      "codeTemplate": "import urequests\nres = urequests.post(\"{{url}}\", json={{payload}})\nprint(\"Status:\", res.status_code)\nprint(res.text)\nres.close()\n",
+      "valueTemplate": "urequests.post(\"{{url}}\", json={{payload}}).text"
+    }
+  ]
+}
