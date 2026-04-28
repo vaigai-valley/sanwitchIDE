@@ -22,13 +22,13 @@
       "type": "oled_print",
       "label": "OLED Print",
       "category": "output",
-      "hint": "Display text at coordinates",
+      "hint": "Display text or variable at coordinates. Use quotes for text.",
       "fields": [
-        { "name": "text", "label": "Text", "type": "text", "default": "Hello!" },
+        { "name": "text", "label": "Text/Var", "type": "text", "default": "\"Hello!\"" },
         { "name": "x", "label": "X", "type": "number", "default": "0" },
         { "name": "y", "label": "Y", "type": "number", "default": "0" }
       ],
-      "codeTemplate": "oled.text('{{text}}', {{x}}, {{y}})\noled.show()"
+      "codeTemplate": "oled.text(str({{text}}), {{x}}, {{y}})\noled.show()"
     }
   ],
   "libraries": {
