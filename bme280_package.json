@@ -23,6 +23,10 @@
       "label": "Read Weather",
       "category": "sensor",
       "hint": "Print temperature, humidity and pressure",
+      "fields": [
+        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" }
+      ],
+      "valueTemplate": "(bme.temperature, bme.humidity, bme.pressure)",
       "codeTemplate": "print('Temp:', bme.temperature, 'Hum:', bme.humidity, 'Pres:', bme.pressure)"
     }
   ],
