@@ -9,9 +9,11 @@
       "category": "sensor",
       "hint": "Fetch latitude and longitude from UART GPS module",
       "fields": [
+        { "name": "assignVar", "label": "Assign to Var (Optional)", "type": "text", "default": "" },
         { "name": "tx", "label": "TX Pin", "type": "number", "default": "16" },
         { "name": "rx", "label": "RX Pin", "type": "number", "default": "17" }
       ],
+      "valueTemplate": "get_gps_fix(tx={{tx}}, rx={{rx}})",
       "codeTemplate": "_lat, _lon = get_gps_fix(tx={{tx}}, rx={{rx}})\nprint(\"GPS -> Lat:\", _lat, \"Lon:\", _lon)",
       "helpers": [
         "_gps_inst = None\ndef get_gps_fix(tx, rx):\n    global _gps_inst\n    try:\n        import gps\n        return gps.get_location(tx=tx, rx=rx)\n    except Exception as e:\n        print('GPS Error: ensure library is installed')\n        return (0, 0)"
