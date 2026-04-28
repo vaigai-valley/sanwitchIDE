@@ -22,11 +22,11 @@
       "type": "lcd_print",
       "label": "LCD Print",
       "category": "output",
-      "hint": "Display string on LCD",
+      "hint": "Display string or variable on LCD. Use quotes for text.",
       "fields": [
-        { "name": "text", "label": "Text", "type": "text", "default": "Hello!" }
+        { "name": "text", "label": "Text/Var", "type": "text", "default": "\"Hello!\"" }
       ],
-      "codeTemplate": "lcd.putstr('{{text}}')"
+      "codeTemplate": "lcd.putstr(str({{text}}))"
     }
   ],
   "libraries": {
