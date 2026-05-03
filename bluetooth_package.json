@@ -1,0 +1,43 @@
+{
+  "id": "sanwitch-bluetooth-official",
+  "name": "Bluetooth BLE Support",
+  "version": "1.0.0",
+  "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m7 7 10 10-5 5V2l5 5L7 17\"></path></svg>",
+  "blocks": [
+    {
+      "type": "ble_init",
+      "label": "BLE Init",
+      "category": "utility",
+      "hint": "Initialize Bluetooth BLE UART service",
+      "fields": [
+        { "name": "name", "label": "Device Name", "type": "text", "default": "Sanwitch-ESP32" }
+      ],
+      "codeTemplate": "from ble_uart import BLEUART\nimport bluetooth\n_ble = bluetooth.BLE()\n_uart = BLEUART(_ble, name=\"{{name}}\")",
+      "imports": ["import bluetooth"]
+    },
+    {
+      "type": "ble_send",
+      "label": "BLE Send",
+      "category": "utility",
+      "hint": "Send text data over Bluetooth",
+      "fields": [
+        { "name": "data", "label": "Data", "type": "text", "default": "Hello" }
+      ],
+      "codeTemplate": "_uart.write(\"{{data}}\\n\")"
+    },
+    {
+      "type": "ble_receive",
+      "label": "BLE Receive",
+      "category": "utility",
+      "hint": "Check for and read incoming Bluetooth data",
+      "fields": [
+        { "name": "assignVar", "label": "Assign to Var", "type": "text", "default": "msg" }
+      ],
+      "codeTemplate": "{{assignVar}} = _uart.read().decode().strip() if _uart.any() else \"\"",
+      "valueTemplate": "(_uart.read().decode().strip() if _uart.any() else \"\")"
+    }
+  ],
+  "libraries": {
+    "ble_uart.py": "# ble_uart.py - Simplified BLE UART for MicroPython\nimport bluetooth\nfrom micropython import const\n\n_ADV_APPEARANCE_GENERIC_COMPUTER = const(128)\n\nclass BLEUART:\n    def __init__(self, ble, name=\"mpy-uart\", rxbuf=100):\n        self._ble = ble\n        self._ble.active(True)\n        self._ble.irq(self._irq)\n        ((self._handle_tx, self._handle_rx),) = self._ble.gatts_register_services((\n            (bluetooth.UUID(\"6E400001-B5A3-F393-E0A9-E50E24DCCA9E\"), (\n                (bluetooth.UUID(\"6E400003-B5A3-F393-E0A9-E50E24DCCA9E\"), bluetooth.FLAG_NOTIFY),\n                (bluetooth.UUID(\"6E400002-B5A3-F393-E0A9-E50E24DCCA9E\"), bluetooth.FLAG_WRITE),\n            )),\n        ))\n        self._connections = set()\n        self._rx_buffer = bytearray()\n        self._handler = None\n        self._name = name\n        self._advertise()\n\n    def _irq(self, event, data):\n        if event == 1: # _IRQ_CENTRAL_CONNECT\n            conn_handle, _, _ = data\n            self._connections.add(conn_handle)\n        elif event == 2: # _IRQ_CENTRAL_DISCONNECT\n            conn_handle, _, _ = data\n            if conn_handle in self._connections:\n                self._connections.remove(conn_handle)\n            self._advertise()\n        elif event == 3: # _IRQ_GATTS_WRITE\n            conn_handle, value_handle = data\n            if conn_handle in self._connections and value_handle == self._handle_rx:\n                self._rx_buffer.extend(self._ble.gatts_read(self._handle_rx))\n                if self._handler: self._handler()\n\n    def any(self):\n        return len(self._rx_buffer)\n\n    def read(self, sz=None):\n        if not sz: sz = len(self._rx_buffer)\n        result = self._rx_buffer[0:sz]\n        self._rx_buffer = self._rx_buffer[sz:]\n        return result\n\n    def write(self, data):\n        for conn_handle in self._connections:\n            self._ble.gatts_notify(conn_handle, self._handle_tx, data)\n\n    def _advertise(self, interval_us=500000):\n        payload = bytearray(b'\\x02\\x01\\x06')\n        payload.append(len(self._name) + 1)\n        payload.append(0x09)\n        payload.extend(self._name.encode())\n        self._ble.gap_advertise(interval_us, adv_data=payload)\n"
+  }
+}
