@@ -168,6 +168,37 @@
       ],
       "imports": ["import urequests"],
       "codeTemplate": "ts_url = \"http://api.thingspeak.com/update?api_key={{api_key}}&field{{field}}=\" + str({{value}})\ntry:\n    res = urequests.get(ts_url)\n    print(\"ThingSpeak Status:\", res.status_code)\n    res.close()\nexcept Exception as e:\n    print(\"ThingSpeak Update failed:\", e)\n"
+    },
+    {
+      "type": "web_server_start",
+      "label": "Start Web Server",
+      "category": "utility",
+      "hint": "Start a simple web server to receive mobile commands",
+      "fields": [
+        {
+          "name": "port",
+          "label": "Port",
+          "type": "number",
+          "default": "80"
+        }
+      ],
+      "imports": ["import usocket as socket"],
+      "codeTemplate": "s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\ns.bind(('', {{port}}))\ns.listen(5)\nprint(\"Web Server started on port {{port}}\")\n"
+    },
+    {
+      "type": "web_server_handle",
+      "label": "Handle Web Request",
+      "category": "utility",
+      "hint": "Listen for and parse incoming WiFi commands",
+      "fields": [
+        {
+          "name": "assignVar",
+          "label": "Assign Command to",
+          "type": "text",
+          "default": "cmd"
+        }
+      ],
+      "codeTemplate": "try:\n    conn, addr = s.accept()\n    request = conn.recv(1024).decode()\n    {{assignVar}} = \"\"\n    if \"?cmd=\" in request:\n        {{assignVar}} = request.split(\"?cmd=\")[1].split(\" \")[0]\n    conn.send('HTTP/1.1 200 OK\\nContent-Type: text/plain\\n\\nOK')\n    conn.close()\nexcept Exception as e:\n    pass\n"
     }
   ],
   "libraries": {
