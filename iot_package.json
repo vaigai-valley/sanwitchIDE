@@ -22,8 +22,10 @@
           "default": "password123"
         }
       ],
-      "imports": ["import network"],
-      "codeTemplate": "_wlan = network.WLAN(network.STA_IF)\n_wlan.active(True)\nif not _wlan.isconnected():\n    _wlan.connect(\"{{ssid}}\", \"{{password}}\")\n    while not _wlan.isconnected():\n        pass\nprint(\"WiFi connected:\", _wlan.ifconfig())\n"
+      "imports": [
+        "import network"
+      ],
+      "codeTemplate": "_wlan = network.WLAN(network.STA_IF)\n_wlan.active(True)\nif not _wlan.isconnected():\n    try:\n        _wlan.disconnect()\n    except:\n        pass\n    try:\n        _wlan.connect(\"{{ssid}}\", \"{{password}}\")\n    except OSError:\n        pass\n    while not _wlan.isconnected():\n        pass\nprint(\"WiFi connected:\", _wlan.ifconfig())\n"
     },
     {
       "type": "http_get",
@@ -44,7 +46,9 @@
           "default": "http://httpbin.org/get"
         }
       ],
-      "imports": ["import urequests"],
+      "imports": [
+        "import urequests"
+      ],
       "codeTemplate": "res = urequests.get(\"{{url}}\")\nprint(\"Status:\", res.status_code)\nprint(res.text)\nres.close()\n",
       "valueTemplate": "urequests.get(\"{{url}}\").text"
     },
@@ -73,7 +77,9 @@
           "default": "{\"key\": \"value\"}"
         }
       ],
-      "imports": ["import urequests"],
+      "imports": [
+        "import urequests"
+      ],
       "codeTemplate": "res = urequests.post(\"{{url}}\", json={{payload}})\nprint(\"Status:\", res.status_code)\nprint(res.text)\nres.close()\n",
       "valueTemplate": "urequests.post(\"{{url}}\", json={{payload}}).text"
     },
@@ -83,7 +89,9 @@
       "category": "utility",
       "hint": "Sync ESP32 internal clock with internet time",
       "fields": [],
-      "imports": ["import ntptime"],
+      "imports": [
+        "import ntptime"
+      ],
       "codeTemplate": "try:\n    ntptime.settime()\n    print(\"Time synced via NTP\")\nexcept Exception as e:\n    print(\"NTP Sync failed:\", e)\n"
     },
     {
@@ -117,7 +125,9 @@
           "default": ""
         }
       ],
-      "imports": ["from umqtt_simple import MQTTClient"],
+      "imports": [
+        "from umqtt_simple import MQTTClient"
+      ],
       "codeTemplate": "mqtt_client = MQTTClient(\"{{client_id}}\", \"{{broker}}\", user=\"{{user}}\" if \"{{user}}\" else None, password=\"{{pwd}}\" if \"{{pwd}}\" else None)\ntry:\n    mqtt_client.connect()\n    print(\"Connected to MQTT Broker!\")\nexcept Exception as e:\n    print(\"MQTT Connect failed:\", e)\n"
     },
     {
@@ -166,7 +176,9 @@
           "default": "25.5"
         }
       ],
-      "imports": ["import urequests"],
+      "imports": [
+        "import urequests"
+      ],
       "codeTemplate": "ts_url = \"http://api.thingspeak.com/update?api_key={{api_key}}&field{{field}}=\" + str({{value}})\ntry:\n    res = urequests.get(ts_url)\n    print(\"ThingSpeak Status:\", res.status_code)\n    res.close()\nexcept Exception as e:\n    print(\"ThingSpeak Update failed:\", e)\n"
     },
     {
@@ -182,7 +194,9 @@
           "default": "80"
         }
       ],
-      "imports": ["import usocket as socket"],
+      "imports": [
+        "import usocket as socket"
+      ],
       "codeTemplate": "s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\ns.bind(('', {{port}}))\ns.listen(5)\nprint(\"Web Server started on port {{port}}\")\n"
     },
     {
