@@ -23,9 +23,10 @@
         }
       ],
       "imports": [
-        "import network"
+        "import network",
+        "import time"
       ],
-      "codeTemplate": "_wlan = network.WLAN(network.STA_IF)\n_wlan.active(True)\nif not _wlan.isconnected():\n    try:\n        _wlan.disconnect()\n    except:\n        pass\n    try:\n        _wlan.connect(\"{{ssid}}\", \"{{password}}\")\n    except OSError:\n        pass\n    while not _wlan.isconnected():\n        pass\nprint(\"WiFi connected:\", _wlan.ifconfig())\n"
+      "codeTemplate": "_wlan = network.WLAN(network.STA_IF)\n_wlan.active(True)\nif not _wlan.isconnected():\n    try:\n        _wlan.disconnect()\n    except:\n        pass\n    try:\n        _wlan.connect(\"{{ssid}}\", \"{{password}}\")\n    except OSError:\n        pass\n    _timeout = 100\n    while not _wlan.isconnected() and _timeout > 0:\n        time.sleep_ms(100)\n        _timeout -= 1\nprint(\"WiFi connected:\", _wlan.ifconfig())\n"
     },
     {
       "type": "http_get",
